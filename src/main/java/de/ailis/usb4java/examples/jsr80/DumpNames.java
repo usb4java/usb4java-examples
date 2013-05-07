@@ -42,8 +42,8 @@ public class DumpNames
         // Read the string descriptor indices from the device descriptor.
         // If they are missing then ignore the device.
         final UsbDeviceDescriptor desc = device.getUsbDeviceDescriptor();
-        byte iManufacturer = desc.iManufacturer();
-        byte iProduct = desc.iProduct();
+        final byte iManufacturer = desc.iManufacturer();
+        final byte iProduct = desc.iProduct();
         if (iManufacturer == 0 || iProduct == 0) return;
 
         // Dump the device name
