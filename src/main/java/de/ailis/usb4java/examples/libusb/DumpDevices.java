@@ -118,12 +118,12 @@ public class DumpDevices
         {
             System.out.println(String.format("Unable to open device: %s. "
                 + "Continuing without device handle.",
-                LibUsb.errorName(result)));
+                LibUsb.strError(result)));
             handle = null;
         }
 
         // Dump the device descriptor
-        System.out.println(descriptor.dump(handle));
+        System.out.print(descriptor.dump(handle));
 
         // Dump all configuration descriptors
         dumpConfigurationDescriptors(device, descriptor.bNumConfigurations(),
