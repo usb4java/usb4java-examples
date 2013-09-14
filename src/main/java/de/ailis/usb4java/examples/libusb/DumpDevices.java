@@ -34,17 +34,14 @@ public class DumpDevices
      * @param numConfigurations
      *            The number of configurations to dump (Read from the device
      *            descriptor)
-     * @param handle
-     *            Optional device handle needed to resolve string descriptor
-     *            numbers to strings. Null if device couldn't be opened.
      * @throws LibUsbException
      *             When libusb reported an error.
      */
     public static void dumpConfigurationDescriptors(final Device device,
-        final int numConfigurations, final DeviceHandle handle)
+        final int numConfigurations)
         throws LibUsbException
     {
-        for (int i = 0; i < numConfigurations; i += 1)
+        for (byte i = 0; i < numConfigurations; i += 1)
         {
             final ConfigDescriptor descriptor = new ConfigDescriptor();
             final int result = LibUsb.getConfigDescriptor(device, i, descriptor);
@@ -55,7 +52,7 @@ public class DumpDevices
             }
             try
             {
-                System.out.println(descriptor.dump(handle).replaceAll("(?m)^",
+                System.out.println(descriptor.dump().replaceAll("(?m)^",
                     "  "));
             }
             finally
@@ -126,8 +123,7 @@ public class DumpDevices
         System.out.print(descriptor.dump(handle));
 
         // Dump all configuration descriptors
-        dumpConfigurationDescriptors(device, descriptor.bNumConfigurations(),
-            handle);
+        dumpConfigurationDescriptors(device, descriptor.bNumConfigurations());
 
         // Close the device if it was opened
         if (handle != null)
