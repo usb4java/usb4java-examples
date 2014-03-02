@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <groupId>org.usb4java.examples</groupId>
+  <groupId>org.usb4java</groupId>
   <artifactId>usb4java-examples</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>usb4java-examples</name>
   <version>1.0.0-SNAPSHOT</version>
   <url>http://github.com/usb4java/usb4java-examples/</url>
@@ -78,10 +78,14 @@
       <name>Ailis Maven Repository</name>
       <url>http://nexus.ailis.de/content/groups/public/</url>
     </repository>
-  </repositories>
+  </repositories>  
   
-  <modules>
-    <module>dumpdevices</module>
-  </modules>
-
+  <dependencies>
+    <dependency>
+      <groupId>org.usb4java</groupId>
+      <artifactId>usb4java</artifactId>
+      <version>1.2.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+  
 </project>
