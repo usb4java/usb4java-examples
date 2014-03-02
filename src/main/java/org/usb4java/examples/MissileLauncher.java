@@ -176,8 +176,10 @@ public class MissileLauncher
     {
         // Initialize the libusb context
         int result = LibUsb.init(null);
-        if (result < 0)
+        if (result != LibUsb.SUCCESS)
+        {
             throw new LibUsbException("Unable to initialize libusb", result);
+        }
 
         // Search for the missile launcher USB device and stop when not found
         Device device = findMissileLauncher();
@@ -190,10 +192,20 @@ public class MissileLauncher
         // Open the device
         DeviceHandle handle = new DeviceHandle();
         result = LibUsb.open(device, handle);
-        if (result != 0)
+        if (result != LibUsb.SUCCESS)
+        {
             throw new LibUsbException("Unable to open USB device", result);
+        }
         try
         {
+            // Check if kernel driver is attached to the interface
+            int attached = LibUsb.kernelDriverActive(handle, 1);
+            if (attached < 0)
+            {
+                throw new LibUsbException(
+                    "Unable to check kernel driver active", result);
+            }
+
             // Detach kernel driver from interface 0 and 1. This can fail if
             // kernel is not attached to the device or operating system
             // doesn't support this operation. These cases are ignored here.
@@ -209,7 +221,9 @@ public class MissileLauncher
             // Claim interface
             result = LibUsb.claimInterface(handle, 1);
             if (result != LibUsb.SUCCESS)
+            {
                 throw new LibUsbException("Unable to claim interface", result);
+            }
 
             // Read commands and execute them
             System.out.println("WADX = Move, S = Stop, F = Fire, Q = Exit");
@@ -251,6 +265,26 @@ public class MissileLauncher
                     default:
                 }
             }
+
+            // Release the interface
+            result = LibUsb.releaseInterface(handle, 1);
+            if (result != LibUsb.SUCCESS)
+            {
+                throw new LibUsbException("Unable to release interface", 
+                    result);
+            }
+
+            // Re-attach kernel driver if needed
+            if (attached == 1)
+            {
+                LibUsb.attachKernelDriver(handle, 1);
+                if (result != LibUsb.SUCCESS)
+                {
+                    throw new LibUsbException(
+                        "Unable to re-attach kernel driver", result);
+                }
+            }
+
             System.out.println("Exiting");
         }
         finally
