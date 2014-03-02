@@ -1,22 +1,21 @@
 /*
- * Copyright (C) 2013 Klaus Reimer <k@ailis.de>
+ * Copyright (C) 2014 Klaus Reimer <k@ailis.de>
  * See LICENSE.txt for licensing information.
  */
 
-package de.ailis.usb4java.examples.libusb;
+package org.usb4java.examples;
 
-import de.ailis.usb4java.libusb.ConfigDescriptor;
-import de.ailis.usb4java.libusb.Context;
-import de.ailis.usb4java.libusb.Device;
-import de.ailis.usb4java.libusb.DeviceDescriptor;
-import de.ailis.usb4java.libusb.DeviceHandle;
-import de.ailis.usb4java.libusb.DeviceList;
-import de.ailis.usb4java.libusb.LibUsb;
-import de.ailis.usb4java.libusb.LibUsbException;
-import de.ailis.usb4java.utils.DescriptorUtils;
+import org.usb4java.ConfigDescriptor;
+import org.usb4java.Context;
+import org.usb4java.DescriptorUtils;
+import org.usb4java.Device;
+import org.usb4java.DeviceDescriptor;
+import org.usb4java.DeviceHandle;
+import org.usb4java.DeviceList;
+import org.usb4java.LibUsb;
 
 /**
- * Dumps the device tree by using the low-level libusb interface.
+ * Dumps the descriptors of all available devices.
  * 
  * @author Klaus Reimer <k@ailis.de>
  */
@@ -34,12 +33,9 @@ public class DumpDevices
      * @param numConfigurations
      *            The number of configurations to dump (Read from the device
      *            descriptor)
-     * @throws LibUsbException
-     *             When libusb reported an error.
      */
     public static void dumpConfigurationDescriptors(final Device device,
         final int numConfigurations)
-        throws LibUsbException
     {
         for (byte i = 0; i < numConfigurations; i += 1)
         {
@@ -47,8 +43,8 @@ public class DumpDevices
             final int result = LibUsb.getConfigDescriptor(device, i, descriptor);
             if (result < 0)
             {
-                throw new LibUsbException("Unable to read config descriptor",
-                    result);
+                throw new RuntimeException(
+                    "Unable to read config descriptor. Result=" + result);
             }
             try
             {
@@ -68,10 +64,8 @@ public class DumpDevices
      * 
      * @param device
      *            The device to dump.
-     * @throws LibUsbException
-     *             When libusb reported an error.
      */
-    public static void dumpDevice(final Device device) throws LibUsbException
+    public static void dumpDevice(final Device device)
     {
         // Dump device address and bus number
         final int address = LibUsb.getDeviceAddress(device);
@@ -102,8 +96,10 @@ public class DumpDevices
         final DeviceDescriptor descriptor = new DeviceDescriptor();
         int result = LibUsb.getDeviceDescriptor(device, descriptor);
         if (result < 0)
-            throw new LibUsbException("Unable to read device descriptor",
-                result);
+        {
+            throw new RuntimeException(
+                "Unable to read device descriptor. Result=" + result);
+        }
 
         // Try to open the device. This may fail because user has no
         // permission to communicate with the device. This is not
@@ -137,11 +133,8 @@ public class DumpDevices
      * 
      * @param args
      *            Command-line arguments (Ignored)
-     * @throws LibUsbException
-     *             When libusb reported an error which wasn't handled by this
-     *             program itself.
      */
-    public static void main(final String[] args) throws LibUsbException
+    public static void main(final String[] args)
     {
         // Create the libusb context
         final Context context = new Context();
@@ -149,13 +142,19 @@ public class DumpDevices
         // Initialize the libusb context
         int result = LibUsb.init(context);
         if (result < 0)
-            throw new LibUsbException("Unable to initialize libusb", result);
+        {
+            throw new RuntimeException(
+                "Unable to initialize libusb. Result=" + result);
+        }
 
         // Read the USB device list
         final DeviceList list = new DeviceList();
         result = LibUsb.getDeviceList(context, list);
         if (result < 0)
-            throw new LibUsbException("Unable to get device list", result);
+        {
+            throw new RuntimeException(
+                "Unable to get device list. Result=" + result);
+        }
 
         try
         {
@@ -170,5 +169,8 @@ public class DumpDevices
             // Ensure the allocated device list is freed
             LibUsb.freeDeviceList(list, true);
         }
+        
+        // Deinitialize the libusb context
+        LibUsb.exit(context);
     }
 }
