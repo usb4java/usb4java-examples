@@ -197,14 +197,6 @@ public class MissileLauncher
             // Detach kernel driver from interface 0 and 1. This can fail if
             // kernel is not attached to the device or operating system
             // doesn't support this operation. These cases are ignored here.
-            result = LibUsb.detachKernelDriver(handle, 0);
-            if (result != LibUsb.SUCCESS &&
-                result != LibUsb.ERROR_NOT_SUPPORTED &&
-                result != LibUsb.ERROR_NOT_FOUND)
-            {
-                throw new LibUsbException("Unable to detach kernel driver",
-                    result);
-            }
             result = LibUsb.detachKernelDriver(handle, 1);
             if (result != LibUsb.SUCCESS &&
                 result != LibUsb.ERROR_NOT_SUPPORTED &&
@@ -213,11 +205,6 @@ public class MissileLauncher
                 throw new LibUsbException("Unable to detach kernel driver",
                     result);
             }
-
-            // Set configuration
-            result = LibUsb.setConfiguration(handle, 1);
-            if (result != LibUsb.SUCCESS)
-                throw new LibUsbException("Unable to set configuration", result);
 
             // Claim interface
             result = LibUsb.claimInterface(handle, 1);
