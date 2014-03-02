@@ -10,6 +10,7 @@ import org.usb4java.Device;
 import org.usb4java.DeviceDescriptor;
 import org.usb4java.DeviceList;
 import org.usb4java.LibUsb;
+import org.usb4java.LibUsbException;
 
 /**
  * Simply lists all available USB devices.
@@ -33,8 +34,7 @@ public class ListDevices
         int result = LibUsb.init(context);
         if (result < 0)
         {
-            throw new RuntimeException(
-                "Unable to initialize libusb. Result=" + result);
+            throw new LibUsbException("Unable to initialize libusb", result);
         }
 
         // Read the USB device list
@@ -42,8 +42,7 @@ public class ListDevices
         result = LibUsb.getDeviceList(context, list);
         if (result < 0)
         {
-            throw new RuntimeException(
-                "Unable to get device list. Result=" + result);
+            throw new LibUsbException("Unable to get device list", result);
         }
 
         try
@@ -57,8 +56,8 @@ public class ListDevices
                 result = LibUsb.getDeviceDescriptor(device, descriptor);
                 if (result < 0)
                 {
-                    throw new RuntimeException(
-                        "Unable to read device descriptor. Result=" + result);
+                    throw new LibUsbException(
+                        "Unable to read device descriptor", result);
                 }
                 System.out.format(
                     "Bus %03d, Device %03d: Vendor %04x, Product %04x%n",

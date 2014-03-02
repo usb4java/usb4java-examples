@@ -13,6 +13,7 @@ import org.usb4java.DeviceDescriptor;
 import org.usb4java.DeviceHandle;
 import org.usb4java.DeviceList;
 import org.usb4java.LibUsb;
+import org.usb4java.LibUsbException;
 
 /**
  * Dumps the descriptors of all available devices.
@@ -43,8 +44,8 @@ public class DumpDevices
             final int result = LibUsb.getConfigDescriptor(device, i, descriptor);
             if (result < 0)
             {
-                throw new RuntimeException(
-                    "Unable to read config descriptor. Result=" + result);
+                throw new LibUsbException("Unable to read config descriptor",
+                    result);
             }
             try
             {
@@ -97,8 +98,8 @@ public class DumpDevices
         int result = LibUsb.getDeviceDescriptor(device, descriptor);
         if (result < 0)
         {
-            throw new RuntimeException(
-                "Unable to read device descriptor. Result=" + result);
+            throw new LibUsbException("Unable to read device descriptor",
+                result);
         }
 
         // Try to open the device. This may fail because user has no
@@ -143,8 +144,7 @@ public class DumpDevices
         int result = LibUsb.init(context);
         if (result < 0)
         {
-            throw new RuntimeException(
-                "Unable to initialize libusb. Result=" + result);
+            throw new LibUsbException("Unable to initialize libusb", result);
         }
 
         // Read the USB device list
@@ -152,8 +152,7 @@ public class DumpDevices
         result = LibUsb.getDeviceList(context, list);
         if (result < 0)
         {
-            throw new RuntimeException(
-                "Unable to get device list. Result=" + result);
+            throw new LibUsbException("Unable to get device list", result);
         }
 
         try
