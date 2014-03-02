@@ -116,8 +116,7 @@ public class MissileLauncher
         buffer.rewind();
         int transfered = LibUsb.controlTransfer(handle,
             (byte) (LibUsb.REQUEST_TYPE_CLASS | LibUsb.RECIPIENT_INTERFACE),
-            (byte) 0x09, (short) 2, (short) (message.length == 64 ? 0 : 1),
-            buffer, TIMEOUT);
+            (byte) 0x09, (short) 2, (short) 1, buffer, TIMEOUT);
         if (transfered < 0)
             throw new LibUsbException("Control transfer failed", transfered);
         if (transfered != message.length)
@@ -220,10 +219,7 @@ public class MissileLauncher
             if (result != LibUsb.SUCCESS)
                 throw new LibUsbException("Unable to set configuration", result);
 
-            // Claim interfaces 0 and 1
-            result = LibUsb.claimInterface(handle, 0);
-            if (result != LibUsb.SUCCESS)
-                throw new LibUsbException("Unable to claim interface", result);
+            // Claim interface
             result = LibUsb.claimInterface(handle, 1);
             if (result != LibUsb.SUCCESS)
                 throw new LibUsbException("Unable to claim interface", result);
