@@ -120,7 +120,7 @@ public class AsyncBulkTransfer
         Transfer transfer = LibUsb.allocTransfer();
         LibUsb.fillBulkTransfer(transfer, handle, OUT_ENDPOINT, buffer,
             callback, null, TIMEOUT);
-        System.out.println("Sending " + data.length + " bytes sent to device");
+        System.out.println("Sending " + data.length + " bytes to device");
         int result = LibUsb.submitTransfer(transfer);
         if (result != LibUsb.SUCCESS)
         {
