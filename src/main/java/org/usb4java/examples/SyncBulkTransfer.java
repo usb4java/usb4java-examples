@@ -15,13 +15,13 @@ import org.usb4java.LibUsb;
 import org.usb4java.LibUsbException;
 
 /**
- * Demonstrates how to do synchronous bulk transfers. This demo sends
- * some hardcoded data to an Android Device (Samsung Galaxy Nexus) and
- * receives some data from it. 
+ * Demonstrates how to do synchronous bulk transfers. This demo sends some
+ * hardcoded data to an Android Device (Samsung Galaxy Nexus) and receives some
+ * data from it.
  * 
- * If you have a different Android device then you can get this demo
- * working by changing the vendor/product id, the interface number and the
- * endpoint addresses. 
+ * If you have a different Android device then you can get this demo working by
+ * changing the vendor/product id, the interface number and the endpoint
+ * addresses.
  * 
  * @author Klaus Reimer <k@ailis.de>
  */
@@ -37,21 +37,67 @@ public class SyncBulkTransfer
     private static final byte[] CONNECT_BODY = new byte[] { 0x68, 0x6F, 0x73,
         0x74, 0x3A, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x3A, 0x41,
         0x44, 0x42, 0x20, 0x44, 0x65, 0x6D, 0x6F, 0x00 };
-    
+
     /** The vendor ID of the Samsung Galaxy Nexus. */
     private static final short VENDOR_ID = 0x04e8;
 
     /** The vendor ID of the Samsung Galaxy Nexus. */
     private static final short PRODUCT_ID = 0x6860;
-    
+
     /** The ADB interface number of the Samsung Galaxy Nexus. */
     private static final byte INTERFACE = 1;
-    
+
     /** The ADB input endpoint of the Samsung Galaxy Nexus. */
     private static final byte IN_ENDPOINT = (byte) 0x83;
-    
+
     /** The ADB output endpoint of the Samsung Galaxy Nexus. */
     private static final byte OUT_ENDPOINT = 0x03;
+
+    /**
+     * Writes some data to the device.
+     * 
+     * @param handle
+     *            The device handle.
+     * @param data
+     *            The data to send to the device.
+     */
+    public static void write(DeviceHandle handle, byte[] data)
+    {
+        ByteBuffer buffer = BufferUtils.allocateByteBuffer(data.length);
+        buffer.put(data);
+        IntBuffer transferred = BufferUtils.allocateIntBuffer();
+        int result = LibUsb.bulkTransfer(handle, OUT_ENDPOINT, buffer,
+            transferred, 5000);
+        if (result != LibUsb.SUCCESS)
+        {
+            throw new LibUsbException("Unable to send data", result);
+        }
+        System.out.println(transferred.get() + " bytes sent to device");
+    }
+
+    /**
+     * Reads some data from the device.
+     * 
+     * @param handle
+     *            The device handle.
+     * @param size
+     *            The number of bytes to read from the device.
+     * @return The read data.
+     */
+    public static ByteBuffer read(DeviceHandle handle, int size)
+    {
+        ByteBuffer buffer = BufferUtils.allocateByteBuffer(24).order(
+            ByteOrder.LITTLE_ENDIAN);
+        IntBuffer transferred = BufferUtils.allocateIntBuffer();
+        int result = LibUsb.bulkTransfer(handle, IN_ENDPOINT, buffer,
+            transferred, 5000);
+        if (result != LibUsb.SUCCESS)
+        {
+            throw new LibUsbException("Unable to read data", result);
+        }
+        System.out.println(transferred.get() + " bytes read from device");
+        return buffer;
+    }
 
     /**
      * Main method.
@@ -71,7 +117,7 @@ public class SyncBulkTransfer
         }
 
         // Open test device (Samsung Galaxy Nexus)
-        DeviceHandle handle = LibUsb.openDeviceWithVidPid(null, VENDOR_ID, 
+        DeviceHandle handle = LibUsb.openDeviceWithVidPid(null, VENDOR_ID,
             PRODUCT_ID);
         if (handle == null)
         {
@@ -86,56 +132,19 @@ public class SyncBulkTransfer
             throw new LibUsbException("Unable to claim interface", result);
         }
 
-        // Send ADB CONNECT message header
-        ByteBuffer buffer = BufferUtils.allocateByteBuffer(
-            CONNECT_HEADER.length);
-        buffer.put(CONNECT_HEADER);        
-        IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        result = LibUsb.bulkTransfer(handle, OUT_ENDPOINT, buffer, transferred, 
-            5000);
-        if (result != LibUsb.SUCCESS)
-        {
-            throw new LibUsbException("Unable to send data", result);
-        }
-        System.out.println(transferred.get() + " bytes sent to device");
+        // Send ADB CONNECT message
+        write(handle, CONNECT_HEADER);
+        write(handle, CONNECT_BODY);
 
-        // Send ADB CONNECT message body
-        buffer = BufferUtils.allocateByteBuffer(CONNECT_BODY.length);
-        buffer.put(CONNECT_BODY);        
-        transferred = BufferUtils.allocateIntBuffer();
-        result = LibUsb.bulkTransfer(handle, OUT_ENDPOINT, buffer, transferred, 
-            5000);
-        if (result != LibUsb.SUCCESS)
-        {
-            throw new LibUsbException("Unable to send data", result);
-        }
-        System.out.println(transferred.get() + " bytes sent to device");
-        
-        // Read ADB answer header from device
-        buffer = BufferUtils.allocateByteBuffer(24).order(
-            ByteOrder.LITTLE_ENDIAN);
-        transferred = BufferUtils.allocateIntBuffer();
-        result = LibUsb.bulkTransfer(handle, IN_ENDPOINT, buffer, transferred, 
-            5000);
-        if (result != LibUsb.SUCCESS)
-        {
-            throw new LibUsbException("Unable to read data", result);
-        }
-        System.out.println(transferred.get() + " bytes read from device");
-        buffer.position(12);
-        int size = buffer.asIntBuffer().get();
+        // Receive the header of the ADB answer (Most likely an AUTH message)
+        ByteBuffer header = read(handle, 24);
+        header.position(12);
+        int dataSize = header.asIntBuffer().get();
 
-        // Read ADB answer body from device
-        buffer = BufferUtils.allocateByteBuffer(size);
-        transferred = BufferUtils.allocateIntBuffer();
-        result = LibUsb.bulkTransfer(handle, IN_ENDPOINT, buffer, transferred, 
-            5000);
-        if (result != LibUsb.SUCCESS)
-        {
-            throw new LibUsbException("Unable to read data", result);
-        }
-        System.out.println(transferred.get() + " bytes read from device");
-        
+        // Receive the body of the ADB answer
+        @SuppressWarnings("unused")
+        ByteBuffer data = read(handle, dataSize);
+
         // Release the ADB interface
         result = LibUsb.releaseInterface(handle, INTERFACE);
         if (result != LibUsb.SUCCESS)
