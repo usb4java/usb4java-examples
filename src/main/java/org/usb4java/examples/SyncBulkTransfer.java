@@ -53,6 +53,9 @@ public class SyncBulkTransfer
     /** The ADB output endpoint of the Samsung Galaxy Nexus. */
     private static final byte OUT_ENDPOINT = 0x03;
 
+    /** The communication timeout in milliseconds. */
+    private static final int TIMEOUT = 5000;
+
     /**
      * Writes some data to the device.
      * 
@@ -67,7 +70,7 @@ public class SyncBulkTransfer
         buffer.put(data);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
         int result = LibUsb.bulkTransfer(handle, OUT_ENDPOINT, buffer,
-            transferred, 5000);
+            transferred, TIMEOUT);
         if (result != LibUsb.SUCCESS)
         {
             throw new LibUsbException("Unable to send data", result);
@@ -86,11 +89,11 @@ public class SyncBulkTransfer
      */
     public static ByteBuffer read(DeviceHandle handle, int size)
     {
-        ByteBuffer buffer = BufferUtils.allocateByteBuffer(24).order(
+        ByteBuffer buffer = BufferUtils.allocateByteBuffer(size).order(
             ByteOrder.LITTLE_ENDIAN);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
         int result = LibUsb.bulkTransfer(handle, IN_ENDPOINT, buffer,
-            transferred, 5000);
+            transferred, TIMEOUT);
         if (result != LibUsb.SUCCESS)
         {
             throw new LibUsbException("Unable to read data", result);
