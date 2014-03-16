@@ -127,6 +127,7 @@ public class HotPlug
         // Unregister the hotplug callback and stop the event handling thread
         thread.abort();
         LibUsb.hotplugDeregisterCallback(null, callbackHandle);
+        thread.join();
 
         // Deinitialize the libusb context
         LibUsb.exit(null);
