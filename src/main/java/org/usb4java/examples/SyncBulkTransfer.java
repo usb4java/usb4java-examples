@@ -41,7 +41,7 @@ public class SyncBulkTransfer
     /** The vendor ID of the Samsung Galaxy Nexus. */
     private static final short VENDOR_ID = 0x04e8;
 
-    /** The vendor ID of the Samsung Galaxy Nexus. */
+    /** The product ID of the Samsung Galaxy Nexus. */
     private static final short PRODUCT_ID = 0x6860;
 
     /** The ADB interface number of the Samsung Galaxy Nexus. */
